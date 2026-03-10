@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人生必做事项清单 | Life Bucket List</title>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="style.css">
+    <!-- 引入 FontAwesome 图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 引入 Chart.js 用于统计图 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- 引入 Vis.js 用于节点轨迹图 -->
+    <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <!-- Markdown 解析库 (用于解析 AI 返回的文本) -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+
+    <header>
+        <div class="header-content">
+            <h1><i class="fa-solid fa-mountain-sun"></i> 人生必做事项清单</h1>
+            <p>规划目标，追踪进度，享受旅程</p>
+        </div>
+        <div class="header-actions">
+            <button id="aiInspireBtn" class="secondary-btn"><i class="fa-solid fa-lightbulb"></i> ✨ AI 灵感</button>
+            <button id="addBtn" class="primary-btn"><i class="fa-solid fa-plus"></i> 新建事项</button>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- 统计面板 -->
+        <section class="dashboard">
+            <!-- 上部分：统计图表 -->
+            <div class="card chart-card">
+                <h3><i class="fa-solid fa-chart-pie"></i> 总体进度</h3>
+                <div class="chart-container">
+                    <canvas id="progressChart"></canvas>
+                </div>
+            </div>
+            <div class="card chart-card">
+                <h3><i class="fa-solid fa-chart-bar"></i> 分类统计</h3>
+                <div class="chart-container">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- 下部分：节点轨迹图 -->
+            <div class="card full-width-card">
+                <h3><i class="fa-solid fa-route"></i> 人生轨迹图</h3>
+                <p class="subtitle">按照你的排序规划生成的人生路径，不同颜色代表不同领域</p>
+                <div id="lifePathNetwork" class="network-container"></div>
+                <div class="legend">
+                    <span class="legend-item"><span class="dot travel"></span>旅行</span>
+                    <span class="legend-item"><span class="dot learning"></span>学习</span>
+                    <span class="legend-item"><span class="dot career"></span>职业</span>
+                    <span class="legend-item"><span class="dot life"></span>生活</span>
+                    <span class="legend-item"><span class="dot other"></span>其他</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 过滤器与控制栏 -->
+        <section class="controls">
+            <div class="filters">
+                <button class="filter-btn active" data-category="all">全部</button>
+                <button class="filter-btn" data-category="travel">旅行</button>
+                <button class="filter-btn" data-category="learning">学习</button>
+                <button class="filter-btn" data-category="career">职业</button>
+                <button class="filter-btn" data-category="life">生活</button>
+            </div>
+            <div class="sort-actions">
+                <span class="hint"><i class="fa-solid fa-arrow-down-short-wide"></i> 排序:</span>
+                <button id="aiSortBtn" class="ai-btn"><i class="fa-solid fa-wand-magic-sparkles"></i> AI 智能推荐</button>
+                <span class="drag-hint">支持鼠标拖拽排序</span>
+            </div>
+        </section>
+
+        <!-- 事项列表 -->
+        <section class="list-container">
+            <ul id="todoList" class="todo-list">
+                <!-- JS 动态渲染列表项 -->
+            </ul>
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <i class="fa-solid fa-clipboard-list"></i>
+                <p>还没有记录，快去添加你的人生目标吧！</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- 添加/编辑事项 弹窗 Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">添加新事项</h2>
+                <span class="close-btn">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="itemForm">
+                    <input type="hidden" id="itemId">
+                    
+                    <div class="form-group">
+                        <label>标题 <span class="required">*</span></label>
+                        <div class="input-with-btn">
+                            <input type="text" id="inputTitle" placeholder="例如：去冰岛看极光" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="form-group half">
+                            <label>分类</label>
+                            <select id="inputCategory">
+                                <option value="travel">旅行</option>
+                                <option value="learning">学习</option>
+                                <option value="career">职业</option>
+                                <option value="life">生活</option>
+                                <option value="other">其他</option>
+                            </select>
+                        </div>
+                        <div class="form-group half">
+                            <label>计划完成时间</label>
+                            <input type="date" id="inputDate">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="label-with-action">
+                            <label>具体要求/目标</label>
+                            <button type="button" id="aiRefineBtn" class="ai-mini-btn">✨ AI 帮我完善</button>
+                        </div>
+                        <input type="text" id="inputRequirement" placeholder="例如：存够旅行基金，学会摄影">
+                        <small class="ai-hint">输入标题后点击上方按钮，AI 将为你自动生成目标和备注</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>详细备注</label>
+                        <textarea id="inputNote" rows="3" placeholder="写下你的想法..."></textarea>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="cancel-btn">取消</button>
+                        <button type="submit" class="save-btn">保存</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI 灵感建议 弹窗 Modal -->
+    <div id="aiIdeasModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>✨ AI 灵感生成器</h2>
+                <span class="close-ai-ideas-btn close-btn">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 15px; color: #666;">选择一个你感兴趣的领域，Gemini 将为你生成 3 个富有创意的人生目标。</p>
+                <div class="ai-category-tags">
+                    <button class="tag-btn" data-val="travel">🌍 旅行探索</button>
+                    <button class="tag-btn" data-val="learning">📚 技能学习</button>
+                    <button class="tag-btn" data-val="career">💼 职业成就</button>
+                    <button class="tag-btn" data-val="life">🧘 生活方式</button>
+                    <button class="tag-btn" data-val="random">🎲 随机惊喜</button>
+                </div>
+                
+                <div id="aiLoading" class="ai-loading" style="display: none;">
+                    <i class="fa-solid fa-spinner fa-spin"></i> 正在连接 Gemini 思考中...
+                </div>
+
+                <div id="aiResults" class="ai-results-list">
+                    <!-- AI 结果将在这里渲染 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>内部系统导航 V3</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f3f4f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .sidebar-item:hover { background-color: #e5e7eb; color: #2563eb; }
+        .sidebar-item.active { background-color: #dbeafe; color: #1e40af; border-right: 3px solid #2563eb; }
+        .tag-pill { transition: all 0.2s; cursor: pointer; user-select: none; }
+        .tag-pill.active { background-color: #3b82f6; color: white; border-color: #3b82f6; }
+        /* 滚动条美化 */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 3px; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <!-- 左侧侧边栏 -->
+    <div class="w-72 bg-white shadow-md hidden md:flex flex-col z-10 border-r border-gray-200">
+        <div class="h-16 flex items-center justify-center bg-blue-600 text-white font-bold text-xl shadow shrink-0">
+            内部导航 V3
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-4 space-y-6">
+
+            <!-- 基础浏览 -->
+            <div>
+                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">基础视图</div>
+                <a href="#" onclick="switchView('category', 'all')" id="link-cat-all" class="sidebar-item active flex items-center px-4 py-2 text-gray-700 rounded-lg transition-colors duration-200 text-sm font-medium">
+                    <i class="fas fa-th-large mr-3 w-5 text-center"></i> 全部应用
+                </a>
+            </div>
+
+            <!-- 标签筛选区域 (Tag Filter) -->
+            <div class="border-t pt-4">
+                <div class="flex justify-between items-center mb-2">
+                    <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider">按标签筛选 (AND)</div>
+                    <button onclick="clearTagFilters()" class="text-[10px] text-blue-500 hover:underline cursor-pointer" id="clear-tags-btn" style="display:none;">清除</button>
+                </div>
+
+                <!-- 侧边栏搜索框 -->
+                <div class="relative mb-3">
+                    <input type="text" id="sidebar-tag-search" oninput="filterSidebarTags(this.value)" placeholder="搜索标签..." class="w-full pl-8 pr-3 py-1.5 bg-gray-50 border border-gray-200 rounded text-sm focus:outline-none focus:border-blue-400">
+                    <i class="fas fa-search absolute left-2.5 top-2 text-gray-400 text-xs"></i>
+                </div>
+
+                <!-- 标签云容器 -->
+                <div id="sidebar-tags-container" class="flex flex-wrap gap-2 max-h-60 overflow-y-auto content-start">
+                    <!-- JS 生成 -->
+                </div>
+            </div>
+
+            <!-- 分类菜单 -->
+            <div class="border-t pt-4">
+                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">分类目录</div>
+                <div id="category-links" class="space-y-1"></div>
+            </div>
+
+            <!-- IP 菜单 -->
+            <div class="border-t pt-4">
+                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">按贡献者 IP</div>
+                <div id="ip-links" class="space-y-1"></div>
+            </div>
+        </div>
+
+        <!-- 底部信息 -->
+        <div class="p-3 border-t text-xs text-gray-500 bg-gray-50 shrink-0">
+            <p>您的IP: <span class="font-mono font-bold text-gray-700">{{ client_ip }}</span></p>
+            <p id="auth-status" class="mt-1"></p>
+        </div>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="flex-1 flex flex-col h-screen overflow-hidden relative bg-gray-100">
+        <!-- 顶部栏 -->
+        <header class="bg-white shadow-sm h-16 flex items-center justify-between px-6 z-10 shrink-0">
+            <h1 class="text-2xl font-bold text-gray-800 flex items-center gap-2" id="header-title">
+                <i class="fas fa-compass text-blue-600"></i> 全部应用
+            </h1>
+            <div class="flex space-x-3">
+                <button onclick="openCategoryManager()" id="manage-cat-btn" class="hidden bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm border border-gray-200 flex items-center">
+                    <i class="fas fa-folder-open mr-2"></i> 管理分类
+                </button>
+                <button onclick="openItemModal()" id="add-btn" class="hidden bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm flex items-center">
+                    <i class="fas fa-plus mr-2"></i> 添加导航
+                </button>
+            </div>
+        </header>
+
+        <!-- 内容滚动区 -->
+        <main class="flex-1 overflow-y-auto p-6 scroll-smooth">
+            <div id="card-container" class="space-y-8 max-w-7xl mx-auto pb-20">
+                <!-- 卡片内容由 JS 渲染 -->
+            </div>
+        </main>
+    </div>
+
+    <!-- 导航项 模态框 (新增/编辑) -->
+    <div id="item-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden items-center justify-center z-50 backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50 rounded-t-xl shrink-0">
+                <h3 class="text-lg font-bold text-gray-800" id="item-modal-title">添加导航</h3>
+                <button onclick="closeItemModal()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+            </div>
+
+            <div class="p-6 space-y-4 overflow-y-auto">
+                <input type="hidden" id="item-id">
+
+                <!-- 第一行：分类和标题 -->
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="col-span-1">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">分类 <span class="text-red-500">*</span></label>
+                        <select id="input-category-id" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white text-sm">
+                            <!-- JS 填充 -->
+                        </select>
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">标题 <span class="text-red-500">*</span></label>
+                        <input type="text" id="input-title" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" placeholder="例如：Jira项目管理">
+                    </div>
+                </div>
+
+                <!-- URL -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">目标地址 (URL) <span class="text-red-500">*</span></label>
+                    <input type="text" id="input-url" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-mono" placeholder="http://...">
+                </div>
+
+                <!-- 描述 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">描述</label>
+                    <textarea id="input-desc" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm resize-none" placeholder="简短的功能描述..."></textarea>
+                </div>
+
+                <!-- 标签管理区域 -->
+                <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">TAG 标签</label>
+
+                    <!-- 已选标签展示区 -->
+                    <div id="modal-selected-tags" class="flex flex-wrap gap-2 mb-2 min-h-[28px]">
+                        <!-- JS 生成 Pill -->
+                    </div>
+
+                    <!-- 搜索/创建区 -->
+                    <div class="relative">
+                        <input type="text" id="modal-tag-input" 
+                               class="w-full px-3 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-400"
+                               placeholder="搜索或创建标签..." autocomplete="off">
+
+                        <!-- 下拉建议框 -->
+                        <div id="modal-tag-suggestions" class="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded shadow-lg z-20 hidden max-h-40 overflow-y-auto">
+                            <!-- JS 填充 -->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="px-6 py-4 bg-gray-50 rounded-b-xl flex justify-end space-x-3 shrink-0">
+                <button onclick="closeItemModal()" class="px-4 py-2 text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 text-sm">取消</button>
+                <button onclick="saveItem()" class="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-md text-sm">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 分类管理 模态框 (保持原样，略微优化样式) -->
+    <div id="cat-manager-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden items-center justify-center z-50 backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg h-[500px] flex flex-col">
+            <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50 rounded-t-xl">
+                <h3 class="text-lg font-bold text-gray-800">分类管理</h3>
+                <button onclick="closeCategoryManager()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-4 bg-gray-50">
+                <div id="cat-list-container" class="space-y-2"></div>
+            </div>
+            <div class="p-4 bg-white border-t">
+                <div class="flex space-x-2">
+                    <input type="text" id="new-cat-name" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none" placeholder="新分类名称">
+                    <select id="new-cat-color" class="px-2 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                        <option value="blue">蓝色</option><option value="green">绿色</option><option value="orange">橙色</option>
+                        <option value="purple">紫色</option><option value="red">红色</option><option value="teal">青色</option>
+                    </select>
+                    <button onclick="addCategory()" class="bg-green-600 text-white px-3 py-2 rounded-lg text-sm">添加</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const isAllowed = {{ 'true' if is_allowed else 'false' }};
+        let globalData = { categories: [], items: [], tags: [] };
+
+        // 视图状态
+        let currentFilter = { 
+            type: 'category', // 'category', 'ip', 'tag_search'
+            value: 'all',     // category_id, ip_string, or null
+            selectedTags: new Set() // 用于逻辑与筛选的 Tag ID 集合
+        };
+
+        // 模态框内的临时状态
+        let modalSelectedTagIds = new Set(); 
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchData();
+            setupAuthUI();
+            setupModalTagSearch();
+        });
+
+        function setupAuthUI() {
+            const authText = document.getElementById('auth-status');
+            if (isAllowed) {
+                authText.innerHTML = '<span class="text-green-600 font-bold flex items-center"><i class="fas fa-check-circle mr-1"></i> 管理员模式</span>';
+                document.getElementById('add-btn').classList.remove('hidden');
+                document.getElementById('manage-cat-btn').classList.remove('hidden');
+            } else {
+                authText.innerHTML = '<span class="text-gray-400 flex items-center"><i class="fas fa-lock mr-1"></i> 仅浏览模式</span>';
+            }
+        }
+
+        async function fetchData() {
+            try {
+                const res = await fetch('/api/data');
+                globalData = await res.json();
+                renderView();
+                updateSidebars();
+            } catch (e) { console.error(e); }
+        }
+
+        // ================== 核心视图逻辑 ==================
+
+        function switchView(type, value) {
+            // 如果切换到 Category 或 IP，需要清空 Tag 筛选（或者保留 Tag 筛选作为二次过滤？根据需求通常是互斥或叠加）
+            // 这里设计为：Tag 筛选优先。如果 Tag 集合不为空，则进入 Tag 模式。
+            // 点击 Category/IP 链接时，会清空 Tag 选中状态。
+
+            currentFilter.selectedTags.clear();
+            currentFilter.type = type;
+            currentFilter.value = value;
+
+            // UI 更新
+            document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tag-pill-sidebar').forEach(el => el.classList.remove('active')); // 假设Sidebar tag class
+            document.getElementById('clear-tags-btn').style.display = 'none';
+
+            if (type === 'category') {
+                const id = value === 'all' ? 'link-cat-all' : 'link-cat-' + value;
+                const el = document.getElementById(id);
+                if (el) el.classList.add('active');
+            } else if (type === 'ip') {
+                const safeIp = value.replace(/\./g, '-');
+                const el = document.getElementById('link-ip-' + safeIp);
+                if (el) el.classList.add('active');
+            }
+
+            renderView();
+        }
+
+        function toggleSidebarTag(tagId) {
+            tagId = parseInt(tagId);
+            if (currentFilter.selectedTags.has(tagId)) {
+                currentFilter.selectedTags.delete(tagId);
+            } else {
+                currentFilter.selectedTags.add(tagId);
+            }
+
+            const clearBtn = document.getElementById('clear-tags-btn');
+
+            if (currentFilter.selectedTags.size > 0) {
+                // 进入标签筛选模式
+                currentFilter.type = 'tag_search';
+                // 清除其他高亮
+                document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+                clearBtn.style.display = 'block';
+            } else {
+                // 恢复到默认
+                currentFilter.type = 'category';
+                currentFilter.value = 'all';
+                document.getElementById('link-cat-all').classList.add('active');
+                clearBtn.style.display = 'none';
+            }
+
+            renderView();
+            updateSidebarTagsVisual();
+        }
+
+        function clearTagFilters() {
+            currentFilter.selectedTags.clear();
+            switchView('category', 'all');
+        }
+
+        function renderView() {
+            const container = document.getElementById('card-container');
+            const titleEl = document.getElementById('header-title');
+            container.innerHTML = '';
+
+            // 1. Tag 筛选模式 (逻辑 AND)
+            if (currentFilter.type === 'tag_search' && currentFilter.selectedTags.size > 0) {
+                const tagNames = Array.from(currentFilter.selectedTags).map(id => {
+                    const t = globalData.tags.find(tag => tag.id === id);
+                    return t ? t.name : '';
+                }).join(' + ');
+
+                titleEl.innerHTML = `<i class="fas fa-tags text-blue-600"></i> 标签筛选: ${tagNames}`;
+
+                // 筛选逻辑: Item 必须包含所有选中的 tagId
+                const filteredItems = globalData.items.filter(item => {
+                    const itemTagIds = item.tag_ids || [];
+                    for (let requiredId of currentFilter.selectedTags) {
+                        if (!itemTagIds.includes(requiredId)) return false;
+                    }
+                    return true;
+                });
+
+                renderFlatGrid(container, filteredItems);
+                return;
+            }
+
+            // 2. IP 视图
+            if (currentFilter.type === 'ip') {
+                titleEl.innerHTML = `<i class="fas fa-desktop text-blue-600"></i> 贡献者: ${currentFilter.value}`;
+                const filteredItems = globalData.items.filter(item => 
+                    item.creator_ip === currentFilter.value || item.last_editor === currentFilter.value
+                );
+                renderFlatGrid(container, filteredItems);
+                return;
+            }
+
+            // 3. 分类视图 (默认)
+            let targetCats = globalData.categories;
+            if (currentFilter.value !== 'all') {
+                targetCats = targetCats.filter(c => c.id === currentFilter.value);
+                if(targetCats.length > 0) 
+                    titleEl.innerHTML = `<i class="fas fa-folder-open text-blue-600"></i> 分类: ${targetCats[0].name}`;
+            } else {
+                titleEl.innerHTML = `<i class="fas fa-th-large text-blue-600"></i> 全部应用`;
+            }
+
+            const colorMap = {
+                'blue': 'bg-blue-500', 'green': 'bg-green-600', 'orange': 'bg-orange-500', 
+                'purple': 'bg-purple-600', 'gray': 'bg-gray-500', 'red': 'bg-red-600', 'teal': 'bg-teal-600'
+            };
+
+            targetCats.forEach(cat => {
+                const catItems = globalData.items.filter(i => i.category_id === cat.id);
+                // 如果只看某个分类，空的也显示；如果看全部，空的分类隐藏
+                if (currentFilter.value === 'all' && catItems.length === 0) return;
+
+                const headerColor = colorMap[cat.color] || 'bg-gray-500';
+                const section = document.createElement('div');
+                section.className = 'bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200 mb-6';
+
+                let html = `
+                    <div class="${headerColor} px-6 py-3 flex items-center justify-between text-white">
+                        <div class="flex items-center">
+                            <h2 class="text-lg font-bold tracking-wide">${cat.name}</h2>
+                        </div>
+                        <span class="text-xs bg-white bg-opacity-20 px-2 py-0.5 rounded">${catItems.length}</span>
+                    </div>
+                    <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                `;
+
+                if (catItems.length === 0) {
+                    html += `<div class="col-span-full text-center text-gray-400 text-sm py-4 border-2 border-dashed border-gray-100 rounded-lg">暂无数据</div>`;
+                } else {
+                    catItems.forEach(item => { html += generateCardHtml(item, cat.color, false); });
+                }
+                html += `</div>`;
+                section.innerHTML = html;
+                container.appendChild(section);
+            });
+        }
+
+        function renderFlatGrid(container, items) {
+            if (items.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-500 py-10">没有找到匹配的记录</div>';
+                return;
+            }
+            // 补全分类信息供卡片显示
+            const enrichedItems = items.map(item => {
+                const cat = globalData.categories.find(c => c.id === item.category_id);
+                return { ...item, _catColor: cat ? cat.color : 'gray', _catName: cat ? cat.name : '未知' };
+            });
+
+            const grid = document.createElement('div');
+            grid.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6';
+            let html = '';
+            enrichedItems.forEach(item => {
+                html += generateCardHtml(item, item._catColor, true, item._catName);
+            });
+            grid.innerHTML = html;
+            container.appendChild(grid);
+        }
+
+        function generateCardHtml(item, colorStr, showBadge, catName='') {
+            const btnColorMap = {
+                'blue': 'bg-blue-600 hover:bg-blue-700', 'green': 'bg-green-700 hover:bg-green-800', 
+                'orange': 'bg-orange-500 hover:bg-orange-600', 'purple': 'bg-purple-600 hover:bg-purple-700', 
+                'gray': 'bg-gray-600 hover:bg-gray-700', 'red': 'bg-red-600 hover:bg-red-700', 'teal': 'bg-teal-600 hover:bg-teal-700'
+            };
+            const btnClass = btnColorMap[colorStr] || btnColorMap['gray'];
+
+            const adminActions = isAllowed ? `
+                <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1 z-10">
+                    <button onclick="editItem(${item.id})" class="p-1.5 bg-white text-blue-600 rounded shadow hover:bg-blue-50 border border-gray-200"><i class="fas fa-pen text-xs"></i></button>
+                    <button onclick="deleteItem(${item.id})" class="p-1.5 bg-white text-red-600 rounded shadow hover:bg-red-50 border border-gray-200"><i class="fas fa-trash text-xs"></i></button>
+                </div>` : '';
+
+            const badge = showBadge ? `<span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-600 mb-2 border border-gray-200">${catName}</span>` : '';
+
+            // 生成 Tag HTML
+            let tagsHtml = '';
+            if (item.tag_ids && item.tag_ids.length > 0) {
+                tagsHtml = '<div class="mt-3 flex flex-wrap gap-1">';
+                item.tag_ids.forEach(tid => {
+                    const t = globalData.tags.find(g => g.id === tid);
+                    if (t) tagsHtml += `<span class="px-1.5 py-0.5 rounded text-[10px] bg-blue-50 text-blue-600 border border-blue-100">#${t.name}</span>`;
+                });
+                tagsHtml += '</div>';
+            }
+
+            return `
+                <div class="group relative bg-white rounded-lg p-5 flex flex-col justify-between transition-all duration-300 shadow hover:shadow-lg border border-gray-100 hover:border-blue-200 h-full">
+                    ${adminActions}
+                    <div>
+                        ${badge}
+                        <h3 class="font-bold text-gray-800 text-lg mb-1 flex items-center">${item.title}</h3>
+                        <p class="text-sm text-gray-500 leading-relaxed h-10 overflow-hidden text-ellipsis line-clamp-2" title="${item.desc}">${item.desc}</p>
+                        ${tagsHtml}
+                    </div>
+                    <div class="mt-4">
+                        <a href="${item.url}" target="_blank" class="block w-full text-center py-2 rounded text-white text-sm font-medium shadow-sm transition-colors ${btnClass}">访问</a>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ================== 侧边栏 Tag 逻辑 ==================
+
+        function filterSidebarTags(val) {
+            renderSidebarTags(val.trim());
+        }
+
+        function renderSidebarTags(prefix = '') {
+            const container = document.getElementById('sidebar-tags-container');
+            container.innerHTML = '';
+
+            // 前缀匹配逻辑 (简单实现 Trie 效果)
+            let displayTags = globalData.tags;
+            if (prefix) {
+                const lowerPrefix = prefix.toLowerCase();
+                displayTags = displayTags.filter(t => t.name.toLowerCase().startsWith(lowerPrefix));
+            }
+
+            if (displayTags.length === 0) {
+                container.innerHTML = '<span class="text-xs text-gray-400 w-full text-center py-2">无匹配标签</span>';
+                return;
+            }
+
+            displayTags.forEach(tag => {
+                const isActive = currentFilter.selectedTags.has(tag.id);
+                const btn = document.createElement('div');
+                btn.className = `tag-pill-sidebar px-2 py-1 text-xs border rounded cursor-pointer transition-colors ${isActive ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-200 hover:border-blue-300'}`;
+                btn.innerText = tag.name;
+                btn.onclick = () => toggleSidebarTag(tag.id);
+                container.appendChild(btn);
+            });
+        }
+
+        function updateSidebarTagsVisual() {
+            // 仅仅更新样式，不重绘DOM以免失去焦点
+            const container = document.getElementById('sidebar-tags-container');
+            // 如果搜索框有值，可能只显示了部分，这里直接用 filterSidebarTags 重新渲染最简单
+            const searchVal = document.getElementById('sidebar-tag-search').value;
+            renderSidebarTags(searchVal);
+        }
+
+        function updateSidebars() {
+            // 更新分类
+            const catContainer = document.getElementById('category-links');
+            catContainer.innerHTML = '';
+            globalData.categories.forEach(cat => {
+                const a = document.createElement('a');
+                a.href = '#';
+                a.id = 'link-cat-' + cat.id;
+                a.onclick = (e) => { e.preventDefault(); switchView('category', cat.id); };
+                a.className = 'sidebar-item flex items-center px-4 py-2 text-gray-600 rounded-lg transition-colors duration-200 text-sm';
+                a.innerHTML = `<i class="fas fa-folder mr-3 w-5 text-center text-gray-400"></i> ${cat.name}`;
+                catContainer.appendChild(a);
+            });
+
+            // 更新 IP
+            const ips = new Set();
+            globalData.items.forEach(item => {
+                if (item.creator_ip && item.creator_ip !== 'System') ips.add(item.creator_ip);
+                if (item.last_editor && item.last_editor !== 'System') ips.add(item.last_editor);
+            });
+            const ipContainer = document.getElementById('ip-links');
+            ipContainer.innerHTML = '';
+            ips.forEach(ip => {
+                const safeIp = ip.replace(/\./g, '-');
+                const a = document.createElement('a');
+                a.href = '#';
+                a.id = 'link-ip-' + safeIp;
+                a.onclick = (e) => { e.preventDefault(); switchView('ip', ip); };
+                a.className = 'sidebar-item flex items-center px-4 py-2 text-gray-600 rounded-lg transition-colors duration-200 text-sm font-mono';
+                a.innerHTML = `<i class="fas fa-desktop mr-3 w-5 text-center text-gray-400"></i> ${ip}`;
+                ipContainer.appendChild(a);
+            });
+
+            // 更新 Tags 区域
+            renderSidebarTags();
+        }
+
+
+        // ================== Modal Tag 编辑逻辑 ==================
+
+        function setupModalTagSearch() {
+            const input = document.getElementById('modal-tag-input');
+            const suggestionBox = document.getElementById('modal-tag-suggestions');
+
+            input.addEventListener('input', (e) => {
+                const val = e.target.value.trim().toLowerCase();
+                suggestionBox.innerHTML = '';
+                if (!val) {
+                    suggestionBox.classList.add('hidden');
+                    return;
+                }
+
+                suggestionBox.classList.remove('hidden');
+
+                // 1. 匹配现有标签 (过滤掉已经选中的)
+                const matches = globalData.tags.filter(t => 
+                    t.name.toLowerCase().startsWith(val) && !modalSelectedTagIds.has(t.id)
+                );
+
+                matches.forEach(tag => {
+                    const div = document.createElement('div');
+                    div.className = 'px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm text-gray-700';
+                    div.innerHTML = `<i class="fas fa-tag text-gray-400 mr-2"></i> ${tag.name}`;
+                    div.onclick = () => { selectTagInModal(tag); input.value = ''; suggestionBox.classList.add('hidden'); };
+                    suggestionBox.appendChild(div);
+                });
+
+                // 2. 允许创建新标签 (如果完全匹配不存在)
+                const exactMatch = globalData.tags.find(t => t.name.toLowerCase() === val);
+                if (!exactMatch) {
+                    const div = document.createElement('div');
+                    div.className = 'px-3 py-2 hover:bg-green-50 cursor-pointer text-sm text-green-700 border-t border-gray-100';
+                    div.innerHTML = `<i class="fas fa-plus mr-2"></i> 创建新标签: "<b>${e.target.value}</b>"`;
+                    div.onclick = () => { createNewTag(e.target.value); input.value = ''; suggestionBox.classList.add('hidden'); };
+                    suggestionBox.appendChild(div);
+                }
+            });
+
+            // 点击外部关闭建议框
+            document.addEventListener('click', (e) => {
+                if (!input.contains(e.target) && !suggestionBox.contains(e.target)) {
+                    suggestionBox.classList.add('hidden');
+                }
+            });
+        }
+
+        function selectTagInModal(tag) {
+            modalSelectedTagIds.add(tag.id);
+            renderModalSelectedTags();
+        }
+
+        async function createNewTag(tagName) {
+            try {
+                const res = await fetch('/api/tag/add', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ name: tagName })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    // 更新本地数据
+                    globalData.tags.push(result.tag);
+                    // 选中它
+                    selectTagInModal(result.tag);
+                    // 刷新侧边栏Tag列表
+                    updateSidebarTagsVisual();
+                } else {
+                    alert(result.message || "创建失败");
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        function renderModalSelectedTags() {
+            const container = document.getElementById('modal-selected-tags');
+            container.innerHTML = '';
+            modalSelectedTagIds.forEach(id => {
+                const tag = globalData.tags.find(t => t.id === id);
+                if (!tag) return;
+                const span = document.createElement('span');
+                span.className = 'inline-flex items-center px-2 py-1 rounded text-sm bg-blue-100 text-blue-700 border border-blue-200';
+                span.innerHTML = `${tag.name} <i class="fas fa-times ml-1.5 cursor-pointer hover:text-blue-900"></i>`;
+                span.querySelector('i').onclick = () => {
+                    modalSelectedTagIds.delete(id);
+                    renderModalSelectedTags();
+                };
+                container.appendChild(span);
+            });
+        }
+
+
+        // ================== 常规 CRUD ==================
+
+        function openItemModal(item = null) {
+            const modal = document.getElementById('item-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            // 填充分类下拉
+            const select = document.getElementById('input-category-id');
+            select.innerHTML = '';
+            globalData.categories.forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat.id;
+                opt.text = cat.name;
+                select.appendChild(opt);
+            });
+
+            // 重置 Tag 状态
+            modalSelectedTagIds.clear();
+            document.getElementById('modal-tag-input').value = '';
+
+            if (item) {
+                document.getElementById('item-modal-title').innerText = "编辑导航";
+                document.getElementById('item-id').value = item.id;
+                document.getElementById('input-title').value = item.title;
+                document.getElementById('input-desc').value = item.desc;
+                document.getElementById('input-url').value = item.url;
+                document.getElementById('input-category-id').value = item.category_id;
+
+                // 加载已有 Tag
+                if (item.tag_ids) {
+                    item.tag_ids.forEach(id => modalSelectedTagIds.add(id));
+                }
+            } else {
+                document.getElementById('item-modal-title').innerText = "添加新导航";
+                document.getElementById('item-id').value = '';
+                document.getElementById('input-title').value = '';
+                document.getElementById('input-desc').value = '';
+                document.getElementById('input-url').value = 'http://';
+                if(globalData.categories.length > 0) select.value = globalData.categories[0].id;
+            }
+            renderModalSelectedTags();
+        }
+
+        function closeItemModal() {
+            document.getElementById('item-modal').classList.add('hidden');
+            document.getElementById('item-modal').classList.remove('flex');
+        }
+
+        function editItem(id) {
+            const item = globalData.items.find(i => i.id === id);
+            if(item) openItemModal(item);
+        }
+
+        async function saveItem() {
+            const id = document.getElementById('item-id').value;
+            const data = {
+                id: id ? parseInt(id) : null,
+                title: document.getElementById('input-title').value,
+                desc: document.getElementById('input-desc').value,
+                url: document.getElementById('input-url').value,
+                category_id: parseInt(document.getElementById('input-category-id').value),
+                tag_ids: Array.from(modalSelectedTagIds) // 发送 Tag IDs
+            };
+
+            if(!data.title || !data.url || !data.category_id) { alert("请完善必填信息"); return; }
+
+            const res = await fetch(id ? '/api/item/edit' : '/api/item/add', {
+                method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+            });
+            if(res.ok) { closeItemModal(); fetchData(); }
+            else { alert("保存失败"); }
+        }
+
+        async function deleteItem(id) {
+            if(!confirm("确定删除？")) return;
+            const res = await fetch('/api/item/delete', {
+                method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({id})
+            });
+            if(res.ok) fetchData();
+        }
+
+        // 分类相关 JS 保持不变
+        function openCategoryManager() {
+            const modal = document.getElementById('cat-manager-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            renderCategoryList();
+        }
+        function closeCategoryManager() {
+            document.getElementById('cat-manager-modal').classList.add('hidden');
+            document.getElementById('cat-manager-modal').classList.remove('flex');
+            fetchData();
+        }
+        function renderCategoryList() {
+            const container = document.getElementById('cat-list-container');
+            container.innerHTML = '';
+            globalData.categories.forEach(cat => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200 shadow-sm';
+                div.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <div class="w-4 h-4 rounded-full bg-${cat.color}-500"></div>
+                        <span class="font-bold text-gray-700">${cat.name}</span>
+                    </div>
+                    <button onclick="deleteCategory(${cat.id})" class="text-red-500 hover:text-red-700 px-2 text-sm"><i class="fas fa-trash"></i></button>
+                `;
+                container.appendChild(div);
+            });
+        }
+        async function addCategory() {
+            const name = document.getElementById('new-cat-name').value;
+            const color = document.getElementById('new-cat-color').value;
+            if(!name) return;
+            await fetch('/api/category/add', {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ name, color })
+            });
+            document.getElementById('new-cat-name').value = '';
+            const dataRes = await fetch('/api/data');
+            globalData = await dataRes.json();
+            renderCategoryList();
+        }
+        async function deleteCategory(id) {
+            if(!confirm("删除分类会导致相关导航项被删除！")) return;
+            await fetch('/api/category/delete', {
+                method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({id})
+            });
+            const dataRes = await fetch('/api/data');
+            globalData = await dataRes.json();
+            renderCategoryList();
+        }
+
+    </script>
+</body>
+</html>

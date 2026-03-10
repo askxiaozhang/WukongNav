@@ -1,0 +1,428 @@
+{
+  "categories": [
+    {
+      "id": 1,
+      "name": "报告与文档",
+      "color": "green"
+    },
+    {
+      "id": 2,
+      "name": "项目管理",
+      "color": "blue"
+    },
+    {
+      "id": 3,
+      "name": "数据标注与管理",
+      "color": "orange"
+    },
+    {
+      "id": 4,
+      "name": "AI与开发工具",
+      "color": "purple"
+    },
+    {
+      "id": 5,
+      "name": "系统监控与订阅",
+      "color": "red"
+    }
+  ],
+  "tags": [
+    {
+      "id": 1,
+      "name": "常用"
+    },
+    {
+      "id": 2,
+      "name": "管理后台"
+    },
+    {
+      "id": 3,
+      "name": "测试环境"
+    },
+    {
+      "id": 4,
+      "name": "audio"
+    },
+    {
+      "id": 5,
+      "name": "CV"
+    },
+    {
+      "id": 6,
+      "name": "Mobile"
+    },
+    {
+      "id": 7,
+      "name": "#nlp"
+    },
+    {
+      "id": 8,
+      "name": "nlp"
+    },
+    {
+      "id": 9,
+      "name": "text2audio"
+    },
+    {
+      "id": 10,
+      "name": "TTS"
+    },
+    {
+      "id": 11,
+      "name": "ASR"
+    },
+    {
+      "id": 12,
+      "name": "#CV"
+    },
+    {
+      "id": 13,
+      "name": "分布式"
+    },
+    {
+      "id": 14,
+      "name": "语音处理"
+    },
+    {
+      "id": 15,
+      "name": "日常办公"
+    }
+  ],
+  "items": [
+    {
+      "id": 1,
+      "category_id": 1,
+      "title": "周报生成",
+      "desc": "生成每周的工作报告。",
+      "url": "http://192.168.110.88:7860",
+      "creator_ip": "System",
+      "last_editor": "192.168.110.86",
+      "tag_ids": [
+        15
+      ],
+      "status": "disconnected"
+    },
+    {
+      "id": 2,
+      "category_id": 1,
+      "title": "月报/绩效生成",
+      "desc": "生成每月的绩效报告。",
+      "url": "http://192.168.110.88:7861",
+      "creator_ip": "System",
+      "last_editor": "192.168.110.88",
+      "tag_ids": [],
+      "status": "disconnected"
+    },
+    {
+      "id": 3,
+      "category_id": 1,
+      "title": "图片转Word文档",
+      "desc": "报销图片快速排版转Word文档",
+      "url": "http://192.168.110.196:55515/",
+      "creator_ip": "System",
+      "last_editor": "192.168.110.86",
+      "tag_ids": [
+        15
+      ],
+      "status": "normal"
+    },
+    {
+      "id": 4,
+      "category_id": 2,
+      "title": "看板",
+      "desc": "项目管理看板。",
+      "url": "http://192.168.110.196",
+      "creator_ip": "System",
+      "last_editor": "System",
+      "tag_ids": [],
+      "status": "normal"
+    },
+    {
+      "id": 5,
+      "category_id": 2,
+      "title": "Wiki",
+      "desc": "Wiki(新版)",
+      "url": "http://192.168.110.196:8075",
+      "creator_ip": "System",
+      "last_editor": "System",
+      "tag_ids": [],
+      "status": "normal"
+    },
+    {
+      "id": 6,
+      "category_id": 3,
+      "title": "Label-Studio标注项目",
+      "desc": "69数据标注与管理工具。",
+      "url": "http://192.168.110.69:8080",
+      "creator_ip": "System",
+      "last_editor": "System",
+      "tag_ids": [],
+      "status": "normal"
+    },
+    {
+      "id": 7,
+      "category_id": 3,
+      "title": "Label-Studio标注项目",
+      "desc": "208数据标注与管理工具。",
+      "url": "http://192.168.110.208:8080",
+      "creator_ip": "System",
+      "last_editor": "System",
+      "tag_ids": [],
+      "status": "normal"
+    },
+    {
+      "id": 8,
+      "category_id": 3,
+      "title": "dewarp-标注",
+      "desc": "进行 dewarp 标注任务。",
+      "url": "http://192.168.110.88:8001/labelStudioPlus/dewarp/",
+      "creator_ip": "System",
+      "last_editor": "System",
+      "tag_ids": [],
+      "status": "disconnected"
+    },
+    {
+      "id": 9,
+      "category_id": 3,
+      "title": "196统一数据管理",
+      "desc": "统一数据管理",
+      "url": "http://192.168.110.196:8012",
+      "creator_ip": "System",
+      "last_editor": "System",
+      "tag_ids": [],
+      "status": "normal"
+    },
+    {
+      "id": 10,
+      "category_id": 3,
+      "title": "Nas统一数据管理",
+      "desc": "统一数据管理",
+      "url": "http://192.168.110.57:10086/",
+      "creator_ip": "System",
+      "last_editor": "System",
+      "tag_ids": [],
+      "status": "normal"
+    },
+    {
+      "id": 11,
+      "category_id": 4,
+      "title": "🆕本地图片转在线url",
+      "desc": "点击进行上传 ✨",
+      "url": "http://192.168.110.88:8001/api/page",
+      "creator_ip": "System",
+      "last_editor": "192.168.110.88",
+      "tag_ids": [],
+      "status": "disconnected"
+    },
+    {
+      "id": 12,
+      "category_id": 4,
+      "title": "智能问诊",
+      "desc": "智能问诊",
+      "url": "http://192.168.110.176:8501/",
+      "creator_ip": "System",
+      "last_editor": "System",
+      "tag_ids": [],
+      "status": "disconnected"
+    },
+    {
+      "id": 13,
+      "category_id": 4,
+      "title": "检验报告解读",
+      "desc": "仲景检验报告解读",
+      "url": "http://192.168.110.88:10081/visual",
+      "creator_ip": "System",
+      "last_editor": "System",
+      "tag_ids": [],
+      "status": "disconnected"
+    },
+    {
+      "id": 17,
+      "category_id": 4,
+      "title": "后端yapi-Mock接口",
+      "desc": "自定义api后端,预留接口。",
+      "url": "https://yapi.hrttest.cn/",
+      "creator_ip": "System",
+      "last_editor": "192.168.110.43",
+      "tag_ids": [],
+      "status": "normal"
+    },
+    {
+      "id": 18,
+      "category_id": 4,
+      "title": "去摩尔纹",
+      "desc": "在线去摩尔纹",
+      "url": "http://192.168.110.69:5000/",
+      "creator_ip": "System",
+      "last_editor": "System",
+      "tag_ids": [],
+      "status": "disconnected"
+    },
+    {
+      "id": 21,
+      "category_id": 5,
+      "title": "FreshRSS",
+      "desc": "自定义追踪前沿新闻,欢迎订阅。",
+      "url": "http://192.168.110.196:20080/",
+      "creator_ip": "System",
+      "last_editor": "System",
+      "tag_ids": [],
+      "status": "normal"
+    },
+    {
+      "id": 22,
+      "category_id": 5,
+      "title": "后羿分布式训练Pro",
+      "desc": "局域网服务器性能监控",
+      "url": "http://192.168.110.69:19999/spaces/askxiaozhang-space/rooms/all-nodes/nodes#notificationsActiveTab=1\u0026silencingRulePrefill=\u0026_o=q1bKy09J9UwJyXfP1y1LzFGyUspNzSuN909Ly8nMS1XSUUrOSCwq8UvMTUWWDq4sLknN1TUAyRuZGSQZWSbpWhoZG-uaGJta6CYam1jqGiabWhiYmiYmW1gkR-ellqQkliTGJ6an5pXE5-QnJ-bE6urSzmiQp4rDMlPLwSxM7_lkloH9RoQFBM2CBVUtAA\u0026metrics_correlation=false\u0026after=-900\u0026before=0\u0026utc=Asia%2FShanghai\u0026offset=%2B8\u0026timezoneName=Beijing%2C%20Chongqing%2C%20Hong%20Kong%2C%20Urumqi\u0026modal=\u0026modalTab=",
+      "creator_ip": "System",
+      "last_editor": "192.168.110.86",
+      "tag_ids": [
+        13
+      ],
+      "status": "normal"
+    },
+    {
+      "id": 23,
+      "category_id": 4,
+      "title": "🆕OCR在线识别",
+      "desc": "OCR识别结果可视化工具",
+      "url": "http://192.168.110.88:8001/ocr/visual/",
+      "creator_ip": "192.168.110.85",
+      "last_editor": "192.168.110.86",
+      "tag_ids": [
+        5
+      ],
+      "status": "normal"
+    },
+    {
+      "id": 24,
+      "category_id": 4,
+      "title": "多文档分离与去摩尔纹",
+      "desc": "上传图片，获取高清修复结果",
+      "url": "http://192.168.110.208:8066/",
+      "creator_ip": "192.168.110.109",
+      "last_editor": "192.168.110.109",
+      "tag_ids": [
+        5
+      ],
+      "status": "normal"
+    },
+    {
+      "id": 25,
+      "category_id": 4,
+      "title": "文本比对可视化工具",
+      "desc": "可视化比对两个文本之间的差异",
+      "url": "https://gemini.google.com/share/fdda9cc6c8e4",
+      "creator_ip": "192.168.110.85",
+      "last_editor": "192.168.110.86",
+      "tag_ids": [
+        8
+      ],
+      "status": "normal"
+    },
+    {
+      "id": 26,
+      "category_id": 4,
+      "title": "Atlas 接口文档",
+      "desc": "ApiFox 接口文档",
+      "url": "https://s.apifox.cn/6c7f3a66-26bf-4ac5-98e9-a0efc26b5bba",
+      "creator_ip": "192.168.110.101",
+      "last_editor": "192.168.110.101",
+      "tag_ids": [],
+      "status": "normal"
+    },
+    {
+      "id": 27,
+      "category_id": 4,
+      "title": "实时语音转文字",
+      "desc": "实时语音转文字\n执行路径：\n69服务器:/home/zhangchang/gitlab/erwa-audio-processing\n环境：/home/zhangchang/gitlab/erwa-audio-processing/venv/bin/python\nscreen id：3191884\n执行路径：python server.py",
+      "url": "https://192.168.110.69:5050/index.html",
+      "creator_ip": "192.168.110.85",
+      "last_editor": "192.168.110.86",
+      "tag_ids": [
+        4,
+        11,
+        14
+      ],
+      "status": "normal"
+    },
+    {
+      "id": 28,
+      "category_id": 4,
+      "title": "手机拍摄demo",
+      "desc": "",
+      "url": "https://192.168.110.86:8021/",
+      "creator_ip": "192.168.110.86",
+      "last_editor": "192.168.110.86",
+      "tag_ids": [
+        5,
+        6
+      ],
+      "status": "normal"
+    },
+    {
+      "id": 29,
+      "category_id": 4,
+      "title": "仲景 - 复查报告总结 Demo",
+      "desc": "基于仲景服务的复查报告总结 Demo",
+      "url": "http://192.168.110.133:8080/zhongjing_follow_up.html",
+      "creator_ip": "192.168.110.101",
+      "last_editor": "192.168.110.101",
+      "tag_ids": [
+        8
+      ],
+      "status": "normal"
+    },
+    {
+      "id": 30,
+      "category_id": 2,
+      "title": "看板手动更新",
+      "desc": "自动更新失败时候，get请求一下，则新增接下来半个月的board",
+      "url": "https://192.168.110.196:7860/add-new-board",
+      "creator_ip": "192.168.110.43",
+      "last_editor": "192.168.110.43",
+      "tag_ids": [],
+      "status": "disconnected"
+    },
+    {
+      "id": 31,
+      "category_id": 4,
+      "title": "文字转语音在线工具",
+      "desc": "",
+      "url": "http://192.168.110.69:3000/generate",
+      "creator_ip": "192.168.110.86",
+      "last_editor": "192.168.110.86",
+      "tag_ids": [
+        9,
+        10
+      ],
+      "status": "disconnected"
+    },
+    {
+      "id": 32,
+      "category_id": 3,
+      "title": "Chain 文档顺序重建数据标注",
+      "desc": "部署于 133 服务器的文档顺序重建标注平台",
+      "url": "http://192.168.110.133:8765/",
+      "creator_ip": "192.168.110.101",
+      "last_editor": "192.168.110.101",
+      "tag_ids": [],
+      "status": "normal"
+    },
+    {
+      "id": 33,
+      "category_id": 4,
+      "title": "文字转语音高级版（支持音色克隆）",
+      "desc": "cd gitlab/CosyVoice/\nscreen -S tts\nconda activate cosyvoice\npython server.py ",
+      "url": "http://192.168.110.69:4000/",
+      "creator_ip": "192.168.110.86",
+      "last_editor": "192.168.110.86",
+      "tag_ids": [
+        10,
+        14
+      ],
+      "status": "normal"
+    }
+  ]
+}
